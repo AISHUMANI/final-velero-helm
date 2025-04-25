@@ -12,7 +12,16 @@ metadata:
     helm.sh/chart: {{ include "velero.chart" . }}
 rules:
 - apiGroups: ["velero.io"]
-  resources: ["*"]
+  resources:
+    - backups
+    - restores
+    - backupstoragelocations
+    - volumesnapshotlocations
+    - schedules
+    - deletebackuprequests
+    - downloadrequests
+    - podvolumebackups
+    - podvolumerestores
   verbs: ["get", "list", "watch", "create", "update", "delete"]
 - apiGroups: [""]
   resources: ["pods", "persistentvolumeclaims", "namespaces"]
