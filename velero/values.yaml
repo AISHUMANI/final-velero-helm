@@ -114,20 +114,17 @@ initContainers:
 # SecurityContext to use for the Velero deployment. Optional.
 # Set fsGroup for `AWS IAM Roles for Service Accounts`
 # see more informations at: https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html
-podSecurityContext:
-  runAsNonRoot: true
-  fsGroup: 1000
+podSecurityContext: {}
+  # fsGroup: 1337
 
 # Container Level Security Context for the 'velero' container of the Velero deployment. Optional.
 # See: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
-containerSecurityContext:
-  allowPrivilegeEscalation: false
-  readOnlyRootFilesystem: true
-  runAsNonRoot: true
-  runAsUser: 1000
-  capabilities:
-    drop:
-      - ALL
+containerSecurityContext: {}
+  # allowPrivilegeEscalation: false
+  # capabilities:
+  #   drop: ["ALL"]
+  #   add: []
+  # readOnlyRootFilesystem: true
 
 # Container Lifecycle Hooks to use for the Velero deployment. Optional.
 lifecycle: {}
