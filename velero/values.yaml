@@ -119,12 +119,15 @@ podSecurityContext: {}
 
 # Container Level Security Context for the 'velero' container of the Velero deployment. Optional.
 # See: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
-containerSecurityContext: {}
-  # allowPrivilegeEscalation: false
-  # capabilities:
-  #   drop: ["ALL"]
-  #   add: []
-  # readOnlyRootFilesystem: true
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop: ["ALL"]
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  privileged: false
+  seccompProfile:
+    type: RuntimeDefault
 
 # Container Lifecycle Hooks to use for the Velero deployment. Optional.
 lifecycle: {}
