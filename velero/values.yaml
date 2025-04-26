@@ -102,6 +102,9 @@ upgradeCRDsJob:
 # See: https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-s-dns-policy
 dnsPolicy: ClusterFirst
 
+networkPolicy:
+  enabled: true
+
 # Init containers to add to the Velero deployment's pod spec. At least one plugin provider image is required.
 initContainers:
   - name: velero-plugin-for-aws
