@@ -75,11 +75,11 @@ podLabels: {}
 # https://velero.io/docs/v1.6/customize-installation/#customize-resource-requests-and-limits
 resources:
   requests:
-    cpu: 500m
-    memory: 128Mi
+    cpu: "100m"
+    memory: "128Mi"
   limits:
-    cpu: 1000m
-    memory: 512Mi
+    cpu: "500m"
+    memory: "512Mi"
 
 # Resource requests/limits to specify for the upgradeCRDs job pod. Need to be adjusted by user accordingly.
 upgradeJobResources: {}
@@ -122,12 +122,12 @@ podSecurityContext: {}
 
 # Container Level Security Context for the 'velero' container of the Velero deployment. Optional.
 # See: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
-containerSecurityContext: {}
-  # allowPrivilegeEscalation: false
-  # capabilities:
-  #   drop: ["ALL"]
-  #   add: []
-  # readOnlyRootFilesystem: true
+containerSecurityContext:
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
 
 # Container Lifecycle Hooks to use for the Velero deployment. Optional.
 lifecycle: {}
