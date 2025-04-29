@@ -10,6 +10,9 @@ metadata:
     "helm.sh/hook": pre-install,pre-upgrade,pre-rollback
     "helm.sh/hook-weight": "5"
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    {{- with .Values.kubectl.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
   labels:
     app.kubernetes.io/name: {{ include "velero.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
@@ -32,12 +35,12 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
     spec:
-    {{- if .Values.image.imagePullSecrets }}
+      {{- if .Values.image.imagePullSecrets }}
       imagePullSecrets:
       {{- range .Values.image.imagePullSecrets }}
         - name: {{ . }}
       {{- end }}
-    {{- end }}
+      {{- end }}
       serviceAccountName: {{ include "velero.serverServiceAccount" . }}-upgrade-crds
       initContainers:
         - name: kubectl
