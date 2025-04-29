@@ -11,11 +11,25 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     helm.sh/chart: {{ include "velero.chart" . }}
 rules:
-- apiGroups:
-    - "*"
+- apiGroups: ["velero.io"]
   resources:
-    - "*"
-  verbs:
-    - "*"
-
+    - backups
+    - restores
+    - backupstoragelocations
+    - volumesnapshotlocations
+    - schedules
+    - deletebackuprequests
+    - downloadrequests
+    - podvolumebackups
+    - podvolumerestores
+  verbs: ["get", "list", "watch", "create", "update", "delete"]
+- apiGroups: [""]
+  resources: ["pods", "persistentvolumeclaims", "namespaces"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["snapshot.storage.k8s.io"]
+  resources: ["volumesnapshots", "volumesnapshotcontents", "volumesnapshotclasses"]
+  verbs: ["get", "list", "watch", "create", "delete"]
 {{- end }}
