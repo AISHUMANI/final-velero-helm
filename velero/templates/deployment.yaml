@@ -9,7 +9,7 @@ metadata:
     {{- with .Values.annotations }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
-    "checkov.skip/CKV_K8S_38": "Velero requires service account token for Kubernetes API access"
+    checkov.skip: CKV_K8S_38=Velero requires service account token for Kubernetes API access
   labels:
     app.kubernetes.io/name: {{ include "velero.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
