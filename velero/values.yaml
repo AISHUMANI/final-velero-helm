@@ -74,21 +74,21 @@ podLabels: {}
 # Resource requests/limits to specify for the Velero deployment.
 # https://velero.io/docs/v1.6/customize-installation/#customize-resource-requests-and-limits
 resources: {}
-   requests:
-     cpu: 500m
-     memory: 128Mi
-   limits:
-     cpu: 1000m
-     memory: 512Mi
+  # requests:
+  #   cpu: 500m
+  #   memory: 128Mi
+  # limits:
+  #   cpu: 1000m
+  #   memory: 512Mi
 
 # Resource requests/limits to specify for the upgradeCRDs job pod. Need to be adjusted by user accordingly.
 upgradeJobResources: {}
- requests:
-     cpu: 50m
-     memory: 128Mi
-   limits:
-     cpu: 100m
-     memory: 256Mi
+# requests:
+#     cpu: 50m
+#     memory: 128Mi
+#   limits:
+#     cpu: 100m
+#     memory: 256Mi
 upgradeCRDsJob:
   # Extra volumes for the Upgrade CRDs Job. Optional.
   extraVolumes: []
