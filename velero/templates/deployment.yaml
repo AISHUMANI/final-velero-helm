@@ -204,17 +204,10 @@ spec:
             {{- toYaml . | nindent 12 }}
             {{- end }}
           {{- end }}
+          {{- with .Values.resources }}
           resources:
-            {{- if .Values.resources }}
-            {{- toYaml .Values.resources | nindent 12 }}
-            {{- else }}
-            limits:
-              cpu: 1000m
-              memory: 512Mi
-            requests:
-              cpu: 500m
-              memory: 128Mi
-            {{- end }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- if .Values.metrics.enabled }}
           {{- with .Values.livenessProbe }}
           livenessProbe: {{- toYaml . | nindent 12 }}
