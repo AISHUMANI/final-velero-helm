@@ -32,7 +32,6 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
     spec:
-      automountServiceAccountToken: false  # Add this line to disable automatic mounting
     {{- if .Values.image.imagePullSecrets }}
       imagePullSecrets:
       {{- range .Values.image.imagePullSecrets }}
