@@ -10,8 +10,7 @@ metadata:
     "helm.sh/hook": pre-install,pre-upgrade,pre-rollback
     "helm.sh/hook-weight": "5"
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
-    # Service account token is required for CRD upgrades which need API access
-    "checkov.skip": CKV_K8S_38
+    "checkov.skip/CKV_K8S_38": "CRD upgrade job requires service account token for kubectl apply"
   labels:
     app.kubernetes.io/name: {{ include "velero.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
@@ -34,6 +33,8 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
     spec:
+      # CRD upgrade job requires service account token for kubectl apply
+      automountServiceAccountToken: true
       {{- if .Values.image.imagePullSecrets }}
       imagePullSecrets:
       {{- range .Values.image.imagePullSecrets }}
@@ -41,9 +42,6 @@ spec:
       {{- end }}
       {{- end }}
       serviceAccountName: {{ include "velero.serverServiceAccount" . }}-upgrade-crds
-      # Service account token is explicitly enabled as this job needs Kubernetes API access
-      # to apply CRDs to the cluster
-      automountServiceAccountToken: true
       initContainers:
         - name: kubectl
           {{- if .Values.kubectl.image.digest }}
