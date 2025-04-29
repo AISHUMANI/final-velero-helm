@@ -54,7 +54,6 @@ spec:
           args:
             - -c
             - cp `which sh` /tmp && cp `which kubectl` /tmp
-          {{- with .Values.kubectl.resources }}
           resources:
             requests:
               cpu: "50m"
@@ -64,7 +63,6 @@ spec:
               memory: "256Mi"
           securityContext:
             {{- toYaml . | nindent 12 }}
-          {{- end }}
           volumeMounts:
             - mountPath: /tmp
               name: crds
@@ -81,7 +79,6 @@ spec:
           args:
             - -c
             - /velero install --crds-only --dry-run -o yaml | /tmp/kubectl apply -f -
-          {{- with .Values.upgradeJobResources }}
           resources:
             requests:
               cpu: "500m"
@@ -91,7 +88,6 @@ spec:
               memory: "512Mi"
           securityContext:
             {{- toYaml . | nindent 12 }}
-          {{- end }}
           volumeMounts:
             - mountPath: /tmp
               name: crds
