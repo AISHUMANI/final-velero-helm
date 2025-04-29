@@ -73,22 +73,28 @@ podLabels: {}
 
 # Resource requests/limits to specify for the Velero deployment.
 # https://velero.io/docs/v1.6/customize-installation/#customize-resource-requests-and-limits
-resources: {}
-  # requests:
-  #   cpu: 500m
-  #   memory: 128Mi
-  # limits:
-  #   cpu: 1000m
-  #   memory: 512Mi
+resources:
+  requests:
+    cpu: 500m
+    memory: 128Mi
+  limits:
+    cpu: 1000m
+    memory: 512Mi
 
 # Resource requests/limits to specify for the upgradeCRDs job pod. Need to be adjusted by user accordingly.
-upgradeJobResources: {}
-# requests:
-#     cpu: 50m
-#     memory: 128Mi
-#   limits:
-#     cpu: 100m
-#     memory: 256Mi
+upgradeJobResources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 100m
+    memory: 256Mi
+  securityContext:
+    runAsNonRoot: true
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: ["ALL"]
+
 upgradeCRDsJob:
   # Extra volumes for the Upgrade CRDs Job. Optional.
   extraVolumes: []
@@ -96,7 +102,6 @@ upgradeCRDsJob:
   extraVolumeMounts: []
   # Extra key/value pairs to be used as environment variables. Optional.
   extraEnvVars: {}
-
 
 # Configure the dnsPolicy of the Velero deployment
 # See: https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-s-dns-policy
@@ -109,21 +114,29 @@ initContainers:
     volumeMounts:
       - mountPath: /target
         name: plugins
+    securityContext:
+      runAsNonRoot: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: ["ALL"]
 
 # SecurityContext to use for the Velero deployment. Optional.
 # Set fsGroup for `AWS IAM Roles for Service Accounts`
 # see more informations at: https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html
-podSecurityContext: {}
-  # fsGroup: 1337
+podSecurityContext:
+  fsGroup: 1337
+  runAsNonRoot: true
+  runAsUser: 1000
 
 # Container Level Security Context for the 'velero' container of the Velero deployment. Optional.
 # See: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
-containerSecurityContext: {}
-  # allowPrivilegeEscalation: false
-  # capabilities:
-  #   drop: ["ALL"]
-  #   add: []
-  # readOnlyRootFilesystem: true
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop: ["ALL"]
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1000
 
 # Container Lifecycle Hooks to use for the Velero deployment. Optional.
 lifecycle: {}
