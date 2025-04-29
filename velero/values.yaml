@@ -4,21 +4,21 @@
 
 # Labels settings in namespace
 namespace:
-  labels:
+  labels: {}
     # Enforce Pod Security Standards with Namespace Labels
     # https://kubernetes.io/docs/tasks/configure-pod-container/enforce-standards-namespace-labels/
-    - key: pod-security.kubernetes.io/enforce
-      value: baseline
-    - key: pod-security.kubernetes.io/enforce-version
-      value: latest
-    - key: pod-security.kubernetes.io/audit
-      value: baseline
-    - key: pod-security.kubernetes.io/audit-version
-      value: latest
-    - key: pod-security.kubernetes.io/warn
-      value: baseline
-    - key: pod-security.kubernetes.io/warn-version
-      value: latest
+    # - key: pod-security.kubernetes.io/enforce
+    #   value: privileged
+    # - key: pod-security.kubernetes.io/enforce-version
+    #   value: latest
+    # - key: pod-security.kubernetes.io/audit
+    #   value: privileged
+    # - key: pod-security.kubernetes.io/audit-version
+    #   value: latest
+    # - key: pod-security.kubernetes.io/warn
+    #   value: privileged
+    # - key: pod-security.kubernetes.io/warn-version
+    #   value: latest
 
 ##
 ## End of namespace-related settings.
@@ -96,13 +96,7 @@ upgradeCRDsJob:
   extraVolumeMounts: []
   # Extra key/value pairs to be used as environment variables. Optional.
   extraEnvVars: {}
-  # Security context for the upgrade CRDs job
-  securityContext:
-    runAsNonRoot: true
-    runAsUser: 1000
-    runAsGroup: 1000
-    fsGroup: 1000
-  automountServiceAccountToken: false
+
 
 # Configure the dnsPolicy of the Velero deployment
 # See: https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-s-dns-policy
@@ -115,31 +109,21 @@ initContainers:
     volumeMounts:
       - mountPath: /target
         name: plugins
-    securityContext:
-      allowPrivilegeEscalation: false
-      capabilities:
-        drop: ["ALL"]
 
 # SecurityContext to use for the Velero deployment. Optional.
 # Set fsGroup for `AWS IAM Roles for Service Accounts`
 # see more informations at: https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html
-podSecurityContext:
-  runAsNonRoot: true
-  runAsUser: 1000
-  runAsGroup: 1000
-  fsGroup: 1000
+podSecurityContext: {}
+  # fsGroup: 1337
 
 # Container Level Security Context for the 'velero' container of the Velero deployment. Optional.
 # See: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
-containerSecurityContext:
-  allowPrivilegeEscalation: false
-  capabilities:
-    drop: ["ALL"]
-  readOnlyRootFilesystem: true
-  privileged: false
-  runAsNonRoot: true
-  runAsUser: 1000
-  runAsGroup: 1000
+containerSecurityContext: {}
+  # allowPrivilegeEscalation: false
+  # capabilities:
+  #   drop: ["ALL"]
+  #   add: []
+  # readOnlyRootFilesystem: true
 
 # Container Lifecycle Hooks to use for the Velero deployment. Optional.
 lifecycle: {}
@@ -307,13 +291,7 @@ kubectl:
     # tag: 1.16.15
   # Container Level Security Context for the 'kubectl' container of the crd jobs. Optional.
   # See: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
-  containerSecurityContext:
-    allowPrivilegeEscalation: false
-    capabilities:
-      drop: ["ALL"]
-    readOnlyRootFilesystem: true
-    runAsNonRoot: true
-    runAsUser: 1000
+  containerSecurityContext: {}
   # Resource requests/limits to specify for the upgrade/cleanup job. Optional
   resources: {}
   # Annotations to set for the upgrade/cleanup job. Optional.
@@ -372,7 +350,7 @@ configuration:
       s3Url: https://s3.amazonaws.com
     #  kmsKeyId:
     #  resourceGroup:
-    #  The ID of the subscription containing the storage account, if different from the cluster's subscription. (Azure only)
+    #  The ID of the subscription containing the storage account, if different from the cluster’s subscription. (Azure only)
     #  subscriptionId:
     #  storageAccount:
     #  publicUrl:
@@ -410,7 +388,7 @@ configuration:
       region: us-east-1
   #    apiTimeout:
   #    resourceGroup:
-  #    The ID of the subscription where volume snapshots should be stored, if different from the cluster's subscription. If specified, also requires `configuration.volumeSnapshotLocation.config.resourceGroup`to be set. (Azure only)
+  #    The ID of the subscription where volume snapshots should be stored, if different from the cluster’s subscription. If specified, also requires `configuration.volumeSnapshotLocation.config.resourceGroup`to be set. (Azure only)
   #    subscriptionId:
   #    incremental:
   #    snapshotLocation:
@@ -526,7 +504,6 @@ serviceAccount:
     annotations:
       eks.amazonaws.com/role-arn: arn:aws:iam::483230317383:role/velero-irsa-role
     labels: {}
-    automountServiceAccountToken: false
     # - registrySecretName
 
 # Info about the secret to be used by the Velero deployment, which
@@ -624,19 +601,12 @@ nodeAgent:
   # Set fsGroup for `AWS IAM Roles for Service Accounts`
   # see more informations at: https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html
   podSecurityContext:
-    runAsNonRoot: true
-    runAsUser: 1000
-    runAsGroup: 1000
-    fsGroup: 1000
+    runAsUser: 0
+    # fsGroup: 1337
 
   # Container Level Security Context for the 'node-agent' container of the node-agent daemonset. Optional.
   # See: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
-  containerSecurityContext:
-    allowPrivilegeEscalation: false
-    capabilities:
-      drop: ["ALL"]
-    readOnlyRootFilesystem: true
-    privileged: false
+  containerSecurityContext: {}
 
   # Container Lifecycle Hooks to use for the node-agent daemonset. Optional.
   lifecycle: {}
