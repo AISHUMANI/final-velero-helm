@@ -1,4 +1,3 @@
-##
 ## Configuration settings related to Velero installation namespace
 ##
 
@@ -80,6 +79,20 @@ resources:
   limits:
     cpu: 1000m
     memory: 512Mi
+
+# Resource requests/limits to specify for the upgradeCRDs job pod. Need to be adjusted by user accordingly.
+upgradeJobResources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 100m
+    memory: 256Mi
+  securityContext:
+    runAsNonRoot: true
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: ["ALL"]
 
 upgradeCRDsJob:
   # Extra volumes for the Upgrade CRDs Job. Optional.
@@ -462,7 +475,7 @@ configuration:
     #   cpu: 1000m
     #   memory: 1024Mi
     # Number of latest maintenance jobs to keep for each repository
-    
+    latestJobsCount: 3
   # `velero server` default: velero
   namespace:
   # additional command-line arguments that will be passed to the `velero server`
