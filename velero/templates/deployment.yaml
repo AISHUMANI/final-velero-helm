@@ -57,6 +57,7 @@ spec:
       {{- end }}
     {{- end }}
     spec:
+      automountServiceAccountToken: false  # Fix for CKV_K8S_38
     {{- if .Values.image.imagePullSecrets }}
       imagePullSecrets:
       {{- range .Values.image.imagePullSecrets }}
@@ -79,7 +80,7 @@ spec:
       {{- else }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
       {{- end }}
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          imagePullPolicy: Always  # Fix for CKV_K8S_15
           {{- if .Values.metrics.enabled }}
           ports:
             - name: http-monitoring
@@ -200,10 +201,13 @@ spec:
             {{- toYaml . | nindent 12 }}
             {{- end }}
           {{- end }}
-          {{- with .Values.resources }}
-          resources:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
+          resources:  # Fixes for CKV_K8S_10, CKV_K8S_11, CKV_K8S_12, CKV_K8S_13
+            limits:
+              cpu: {{ .Values.resources.limits.cpu | default "1000m" }}
+              memory: {{ .Values.resources.limits.memory | default "512Mi" }}
+            requests:
+              cpu: {{ .Values.resources.requests.cpu | default "500m" }}
+              memory: {{ .Values.resources.requests.memory | default "128Mi" }}
           {{- if .Values.metrics.enabled }}
           {{- with .Values.livenessProbe }}
           livenessProbe: {{- toYaml . | nindent 12 }}
