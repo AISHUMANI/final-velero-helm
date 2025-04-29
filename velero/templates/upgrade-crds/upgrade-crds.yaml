@@ -10,17 +10,11 @@ metadata:
     "helm.sh/hook": pre-install,pre-upgrade,pre-rollback
     "helm.sh/hook-weight": "5"
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
-    {{- with .Values.kubectl.annotations }}
-    {{- toYaml . | nindent 4 }}
-    {{- end }}
   labels:
     app.kubernetes.io/name: {{ include "velero.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     helm.sh/chart: {{ include "velero.chart" . }}
-  {{- with .Values.kubectl.labels }}
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
 spec:
   backoffLimit: 3
   template:
@@ -31,26 +25,17 @@ spec:
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         helm.sh/chart: {{ include "velero.chart" . }}
-      {{- with .Values.kubectl.labels }}
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
     spec:
       {{- if .Values.image.imagePullSecrets }}
       imagePullSecrets:
-      {{- range .Values.image.imagePullSecrets }}
+        {{- range .Values.image.imagePullSecrets }}
         - name: {{ . }}
-      {{- end }}
+        {{- end }}
       {{- end }}
       serviceAccountName: {{ include "velero.serverServiceAccount" . }}-upgrade-crds
       initContainers:
         - name: kubectl
-          {{- if .Values.kubectl.image.digest }}
-          image: "{{ .Values.kubectl.image.repository }}@{{ .Values.kubectl.image.digest }}"
-          {{- else if .Values.kubectl.image.tag }}
           image: "{{ .Values.kubectl.image.repository }}:{{ .Values.kubectl.image.tag }}"
-          {{- else }}
-          image: "{{ .Values.kubectl.image.repository }}:{{ template "chart.KubernetesVersion" . }}"
-          {{- end }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command:
             - /bin/sh
@@ -64,18 +49,12 @@ spec:
             limits:
               cpu: "100m"
               memory: "256Mi"
-          securityContext:
-            {{- toYaml . | nindent 12 }}
           volumeMounts:
             - mountPath: /tmp
               name: crds
       containers:
         - name: velero
-          {{- if .Values.image.digest }}
-          image: "{{ .Values.image.repository }}@{{ .Values.image.digest }}"
-          {{- else }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          {{- end }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command:
             - /tmp/sh
@@ -89,29 +68,12 @@ spec:
             limits:
               cpu: "1000m"
               memory: "512Mi"
-          securityContext:
-            {{- toYaml . | nindent 12 }}
           volumeMounts:
             - mountPath: /tmp
               name: crds
-          {{- if (.Values.upgradeCRDsJob).extraVolumeMounts }}
-          {{- toYaml .Values.upgradeCRDsJob.extraVolumeMounts | nindent 12 }}
-          {{- end }}
-          {{- if (.Values.upgradeCRDsJob).extraEnvVars }}
-          env:
-          {{- with .Values.upgradeCRDsJob.extraEnvVars }}
-          {{- range $key, $value := . }}
-            - name: {{ default "none" $key }}
-              value: {{ default "none" $value | quote }}
-          {{- end }}
-          {{- end }}
-          {{- end }}
       volumes:
         - name: crds
           emptyDir: {}
-        {{- if (.Values.upgradeCRDsJob).extraVolumes }}
-        {{- toYaml .Values.upgradeCRDsJob.extraVolumes | nindent 8 }}
-        {{- end }}
       restartPolicy: OnFailure
       {{- with $podSecurityContext }}
       securityContext:
