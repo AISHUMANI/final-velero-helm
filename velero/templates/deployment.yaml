@@ -5,10 +5,11 @@ kind: Deployment
 metadata:
   name: {{ include "velero.fullname" . }}
   namespace: {{ .Release.Namespace }}
-  {{- with .Values.annotations }}
   annotations:
+    {{- with .Values.annotations }}
     {{- toYaml . | nindent 4 }}
-  {{- end }}
+    {{- end }}
+    "checkov.skip/CKV_K8S_38": "Velero requires service account token for Kubernetes API access"
   labels:
     app.kubernetes.io/name: {{ include "velero.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
@@ -57,16 +58,14 @@ spec:
       {{- end }}
     {{- end }}
     spec:
-      # Only set automountServiceAccountToken if explicitly configured
-      {{- if hasKey .Values "automountServiceAccountToken" }}
-      automountServiceAccountToken: {{ .Values.automountServiceAccountToken }}
-      {{- end }}
-    {{- if .Values.image.imagePullSecrets }}
+      # Velero requires service account token for Kubernetes API access
+      automountServiceAccountToken: true
+      {{- if .Values.image.imagePullSecrets }}
       imagePullSecrets:
       {{- range .Values.image.imagePullSecrets }}
         - name: {{ . }}
       {{- end }}
-    {{- end }}
+      {{- end }}
       restartPolicy: Always
       serviceAccountName: {{ include "velero.serverServiceAccount" . }}
       {{- if .Values.priorityClassName }}
