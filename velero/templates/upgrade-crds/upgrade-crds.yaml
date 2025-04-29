@@ -1,4 +1,5 @@
 {{- if .Values.upgradeCRDs }}
+{{/* 'securityContext' got renamed to 'podSecurityContext', merge both dicts into one for backward compatibility */}}
 {{- $podSecurityContext := merge (.Values.podSecurityContext | default dict) (.Values.securityContext | default dict) -}}
 apiVersion: batch/v1
 kind: Job
@@ -9,7 +10,7 @@ metadata:
     "helm.sh/hook": pre-install,pre-upgrade,pre-rollback
     "helm.sh/hook-weight": "5"
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
-    "checkov.skip": CKV_K8S_38  # Explicit skip for this necessary case
+    "checkov.skip": CKV_K8S_38  # Explicitly skip this check as the token is required
   labels:
     app.kubernetes.io/name: {{ include "velero.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
@@ -23,8 +24,6 @@ spec:
   template:
     metadata:
       name: velero-upgrade-crds
-      annotations:
-        checksum/service-account: {{ include (print $.Template.BasePath "/serviceaccount.yaml") . | sha256sum }}
       labels:
         app.kubernetes.io/name: {{ include "velero.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
@@ -34,8 +33,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
     spec:
-      # Explicitly set to true with justification in annotations
-      automountServiceAccountToken: true
+      automountServiceAccountToken: true  # Explicitly enable since this job needs API access
     {{- if .Values.image.imagePullSecrets }}
       imagePullSecrets:
       {{- range .Values.image.imagePullSecrets }}
@@ -45,43 +43,95 @@ spec:
       serviceAccountName: {{ include "velero.serverServiceAccount" . }}-upgrade-crds
       initContainers:
         - name: kubectl
-          image: {{ .Values.kubectl.image.repository }}:{{ .Values.kubectl.image.tag | default (template "chart.KubernetesVersion" .) }}
+          {{- if .Values.kubectl.image.digest }}
+          image: "{{ .Values.kubectl.image.repository }}@{{ .Values.kubectl.image.digest }}"
+          {{- else if .Values.kubectl.image.tag }}
+          image: "{{ .Values.kubectl.image.repository }}:{{ .Values.kubectl.image.tag }}"
+          {{- else }}
+          image: "{{ .Values.kubectl.image.repository }}:{{ template "chart.KubernetesVersion" . }}"
+          {{- end }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: ["/bin/sh", "-c", "cp `which sh` /tmp && cp `which kubectl` /tmp"]
+          command:
+            - /bin/sh
+          args:
+            - -c
+            - cp `which sh` /tmp && cp `which kubectl` /tmp
           resources:
-            {{- toYaml (.Values.upgradeJobResources | default dict) | nindent 12 }}
+            {{- with .Values.upgradeJobResources }}
+            requests:
+              cpu: "50m"
+              memory: "128Mi"
+            limits:
+              cpu: "100m"
+              memory: "256Mi"
+            {{- else }}
+            requests:
+              cpu: "50m"
+              memory: "128Mi"
+            limits:
+              cpu: "100m"
+              memory: "256Mi"
+            {{- end }}
           securityContext:
-            {{- toYaml (.Values.upgradeJobResources.securityContext | default dict) | nindent 12 }}
+            {{- with .Values.upgradeJobResources.securityContext }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
           volumeMounts:
             - mountPath: /tmp
               name: crds
       containers:
         - name: velero
-          image: {{ .Values.image.repository }}:{{ .Values.image.tag | default "latest" }}
+          {{- if .Values.image.digest }}
+          image: "{{ .Values.image.repository }}@{{ .Values.image.digest }}"
+          {{- else }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          {{- end }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: ["/tmp/sh", "-c", "/velero install --crds-only --dry-run -o yaml | /tmp/kubectl apply -f -"]
+          command:
+            - /tmp/sh
+          args:
+            - -c
+            - /velero install --crds-only --dry-run -o yaml | /tmp/kubectl apply -f -
           resources:
-            {{- toYaml (.Values.upgradeJobResources | default dict) | nindent 12 }}
+            {{- with .Values.upgradeJobResources }}
+            requests:
+              cpu: "500m"
+              memory: "128Mi"
+            limits:
+              cpu: "1000m"
+              memory: "512Mi"
+            {{- else }}
+            requests:
+              cpu: "500m"
+              memory: "128Mi"
+            limits:
+              cpu: "1000m"
+              memory: "512Mi"
+            {{- end }}
           securityContext:
-            {{- toYaml (.Values.upgradeJobResources.securityContext | default dict) | nindent 12 }}
+            {{- with .Values.upgradeJobResources.securityContext }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
           volumeMounts:
             - mountPath: /tmp
               name: crds
-          {{- with .Values.upgradeCRDsJob.extraVolumeMounts }}
-            {{- toYaml . | nindent 12 }}
+          {{- if (.Values.upgradeCRDsJob).extraVolumeMounts }}
+          {{- toYaml .Values.upgradeCRDsJob.extraVolumeMounts | nindent 12 }}
           {{- end }}
-          {{- with .Values.upgradeCRDsJob.extraEnvVars }}
+          {{- if (.Values.upgradeCRDsJob).extraEnvVars }}
           env:
-            {{- range $key, $value := . }}
-            - name: {{ $key | default "none" }}
-              value: {{ $value | default "none" | quote }}
-            {{- end }}
+          {{- with .Values.upgradeCRDsJob.extraEnvVars }}
+          {{- range $key, $value := . }}
+            - name: {{ default "none" $key }}
+              value: {{ default "none" $value | quote }}
+          {{- end }}
+          {{- end }}
           {{- end }}
       volumes:
         - name: crds
           emptyDir: {}
-        {{- with .Values.upgradeCRDsJob.extraVolumes }}
-          {{- toYaml . | nindent 8 }}
+        {{- if (.Values.upgradeCRDsJob).extraVolumes }}
+        {{- toYaml .Values.upgradeCRDsJob.extraVolumes | nindent 8 }}
         {{- end }}
       restartPolicy: OnFailure
       {{- with $podSecurityContext }}
