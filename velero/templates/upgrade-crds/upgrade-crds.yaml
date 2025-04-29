@@ -62,9 +62,9 @@ spec:
             limits:
               cpu: "100m"
               memory: "256Mi"
+          {{- end }}
           securityContext:
             {{- toYaml . | nindent 12 }}
-          {{- end }}
           volumeMounts:
             - mountPath: /tmp
               name: crds
@@ -89,9 +89,9 @@ spec:
             limits:
               cpu: "1000m"
               memory: "512Mi"
+          {{- end }}
           securityContext:
             {{- toYaml . | nindent 12 }}
-          {{- end }}
           volumeMounts:
             - mountPath: /tmp
               name: crds
