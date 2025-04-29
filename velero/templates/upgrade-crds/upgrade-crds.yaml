@@ -10,7 +10,7 @@ metadata:
     "helm.sh/hook": pre-install,pre-upgrade,pre-rollback
     "helm.sh/hook-weight": "5"
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
-    "checkov.skip/CKV_K8S_38": "CRD upgrade job requires service account token for kubectl apply"
+    checkov.skip: CKV_K8S_38=CRD upgrade job requires service account token for kubectl apply
   labels:
     app.kubernetes.io/name: {{ include "velero.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
